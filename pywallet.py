@@ -1287,10 +1287,13 @@ def deserialize_CAddress(d):
 
 def parse_BlockLocator(vds):
 	d = { 'hashes' : [] }
-	nHashes = vds.read_compact_size()
+	try:
+		nHashes = vds.read_compact_size()
+	except IndexError:
+		nHashes=0
 	for i in xrange(nHashes):
 		d['hashes'].append(vds.read_bytes(32))
-		return d
+	return d
 
 def deserialize_BlockLocator(d):
   result = "Block Locator top: "+d['hashes'][0][::-1].encode('hex_codec')
@@ -2498,7 +2501,7 @@ def read_wallet(json_db, db_env, walletfile, print_wallet, print_wallet_transact
 		elif type == "acentry":
 			json_db['acentry'] = (d['account'], d['nCreditDebit'], d['otherAccount'], time.ctime(d['nTime']), d['n'], d['comment'])
 
-		elif type == "bestblock":
+		elif type == "bestblock" and len(d['hashes'])>0:
 			json_db['bestblock'] = d['hashes'][0][::-1].encode('hex_codec')
 
 		elif type == "ckey":
@@ -2537,6 +2540,7 @@ def read_wallet(json_db, db_env, walletfile, print_wallet, print_wallet_transact
 		addr = k['addr']
 		if include_balance:
 #			print("%3d/%d  %s  %s" % (i, nkeys, k["addr"], k["balance"]))
+			time.sleep(1)
 			k["balance"] = balance(balance_site, k["addr"])
 #			print("  %s" % (i, nkeys, k["addr"], k["balance"]))
 
